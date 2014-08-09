@@ -32,8 +32,8 @@ public class GeneratorPsiVisitor extends PsiElementVisitor {
       return;
     }
 
-    PsiFile psiJavaFile = psiClass.getContainingFile();
-    PsiDirectory psiDirectory = psiJavaFile.getContainingDirectory();
+    PsiFile file = psiClass.getContainingFile();
+    PsiDirectory psiDirectory = file.getContainingDirectory();
 
     if (psiDirectory == null || !psiDirectory.isWritable()) {
       psiDirectory = psiFile.getContainingDirectory();

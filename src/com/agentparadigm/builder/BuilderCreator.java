@@ -10,6 +10,7 @@ public class BuilderCreator implements Runnable {
   String buildMethodTemplate = "public %s build() {%s obj = new %s(); %s return obj;}";
   String withMethodTemplate = "public %s with%s(%s %s) {this.%s = %s; return this;}";
   String withListMethodTemplate = "public %s with%s(%s... %s) {if(this.%s == null){this.%s = new ArrayList<>();}this.%s.addAll(Arrays.asList(%s)); return this;}";
+  String withMapMethodTemplate = "public %s with%s(%s key,%s value) {if(this.%s == null){this.%s = new HashMap<>();}this.%s.put(key, value); return this;}";
 
   private PsiDirectory psiDirectory;
   private PsiClass originalClass;
@@ -74,6 +75,27 @@ public class BuilderCreator implements Runnable {
                 psiField.getName()
             ), null));
       }
+
+
+      //public %s with%s(%s key,%s value) {if(this.%s == null){this.%s = new HashMap<>();}this.%s.put(key, value); return this;}
+      if (psiField.getType().isAssignableFrom(elementFactory.createTypeFromText(CommonClassNames.JAVA_UTIL_MAP, null))
+          && psiField.getType().getPresentableText().contains("<")) { //only if it has a generic form
+        newFile.importClass(JavaPsiFacade.getInstance(project).findClass("java.util.HashMap", GlobalSearchScope.allScope(project)));
+        psiField.getType().getCanonicalText();
+        String[] types = psiField.getType().getPresentableText().replaceFirst(".*<", "").replaceFirst(">.*", "").split(",");
+        newClass.add(elementFactory.createMethodFromText(
+            String.format(
+                withMapMethodTemplate,
+                newClass.getName(),
+                fieldCamelCase,
+                types[0],
+                types[1],
+                psiField.getName(),
+                psiField.getName(),
+                psiField.getName()
+            ), null));
+      }
+
       newFile.importClass(psiField.getContainingClass());
     }
 
